@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Frame Maker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .editor-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .frame-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background-color: #2c2c54;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            z-index: 2;
+        }
+
+        .user-photo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 70%;
+            max-height: 70%;
+            object-fit: cover;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .frames-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .frames-header:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .frames-header h3 {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .arrow {
+            transition: transform 0.3s ease;
+        }
+
+        .arrow.expanded {
+            transform: rotate(180deg);
+        }
+
+        .frames-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, margin-bottom 0.3s ease;
+        }
+
+        .frames-grid.expanded {
+            max-height: 500px;
+            margin-bottom: 20px;
+        }
+
+        .frame-option {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .frame-option:hover {
+            transform: scale(1.05);
+        }
+
+        .frame-option.active {
+            border-color: #ff9f43;
+        }
+
+        .frame-option img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-section {
+            margin-bottom: 20px;
+        }
+
+        .upload-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: #ff9f43;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .upload-btn:hover {
+            background: #ffaf60;
+            transform: translateY(-2px);
+        }
+
+        .adjustment-controls {
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider {
+            flex: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #ff9f43;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn {
+            background: #576574;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background: #6c7a8a;
+        }
+
+        .download-btn {
+            background: #0abde3;
+            color: white;
+        }
+
+        .download-btn:hover {
+            background: #48dbfb;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .frame-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Photo Frame Maker</h1>
+            <p class="subtitle">Upload your photo, choose a frame, adjust, and download your creation!</p>
+        </header>
+
+        <div class="main-content">
+            <div class="editor-section">
+                <h2 class="section-title">Preview</h2>
+                <div class="frame-container">
+                    <img id="userPhoto" class="user-photo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' font-size='18' text-anchor='middle' fill='white' font-family='Arial' dy='.3em'%3EUpload a Photo%3C/text%3E%3C/svg%3E" alt="User Photo">
+                    <img id="selectedFrame" class="frame" src="https://i.imgur.com/1zQqQ9q.png" alt="Selected Frame">
+                </div>
+
+                <div class="upload-section">
+                    <input type="file" id="photoUpload" accept="image/*" style="display: none;">
+                    <button class="upload-btn" id="uploadTrigger">Upload Photo</button>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <div class="frames-header" id="framesHeader">
+                    <h3>Select Frame</h3>
+                    <svg class="arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 9L12 15L18 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                
+                <div class="frames-grid" id="framesGrid">
+                    <!-- Frames will be added by JavaScript -->
+                </div>
+
+                <h2 class="section-title">Adjustments</h2>
+                <div class="adjustment-controls">
+                    <div class="control-group">
+                        <label class="control-label">Zoom</label>
+                        <div class="slider-container">
+                            <input type="range" min="50" max="150" value="100" class="slider" id="zoomSlider">
+                            <span class="slider-value" id="zoomValue">100%</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Horizontal Position</label>
+                        <div class="slider-container">
+                            <input type="range" min="-50" max="50" value="0" class="slider" id="xSlider">
+                            <span class="slider-value" id="xValue">0</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Vertical Position</label>
+                        <div class="slider-container">
+                            <input type="range" min="-50" max="50" value="0" class="slider" id="ySlider">
+                            <span class="slider-value" id="yValue">0</span>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Rotation</label>
+                        <div class="slider-container">
+                            <input type="range" min="-180" max="180" value="0" class="slider" id="rotateSlider">
+                            <span class="slider-value" id="rotateValue">0°</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn reset-btn" id="resetBtn">Reset</button>
+                    <button class="action-btn download-btn" id="downloadBtn">Download</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Photo Frame Maker &copy; 2023 | Create beautiful framed photos in seconds</p>
+        </footer>
+    </div>
+
+    <script>
+        // Frame URLs from Imgur
+        const frameUrls = [
+            "https://i.imgur.com/1zQqQ9q.png", // Classic frame
+            "https://i.imgur.com/2aXbY7c.png", // Ornate frame
+            "https://i.imgur.com/3cDdE8f.png", // Modern frame
+            "https://i.imgur.com/4dEeF9g.png", // Vintage frame
+            "https://i.imgur.com/5fFgH0h.png", // Floral frame
+            "https://i.imgur.com/6gGhI1j.png", // Polaroid frame
+            "https://i.imgur.com/7hHiJ2k.png", // Heart frame
+            "https://i.imgur.com/8iIjK3l.png"  // Star frame
+        ];
+
+        // DOM Elements
+        const framesGrid = document.getElementById('framesGrid');
+        const framesHeader = document.getElementById('framesHeader');
+        const arrow = document.querySelector('.arrow');
+        const selectedFrame = document.getElementById('selectedFrame');
+        const userPhoto = document.getElementById('userPhoto');
+        const photoUpload = document.getElementById('photoUpload');
+        const uploadTrigger = document.getElementById('uploadTrigger');
+        const zoomSlider = document.getElementById('zoomSlider');
+        const zoomValue = document.getElementById('zoomValue');
+        const xSlider = document.getElementById('xSlider');
+        const xValue = document.getElementById('xValue');
+        const ySlider = document.getElementById('ySlider');
+        const yValue = document.getElementById('yValue');
+        const rotateSlider = document.getElementById('rotateSlider');
+        const rotateValue = document.getElementById('rotateValue');
+        const resetBtn = document.getElementById('resetBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // Initialize frames
+        frameUrls.forEach((url, index) => {
+            const frameOption = document.createElement('div');
+            frameOption.className = 'frame-option';
+            if (index === 0) frameOption.classList.add('active');
+            
+            const frameImg = document.createElement('img');
+            frameImg.src = url;
+            frameImg.alt = `Frame ${index + 1}`;
+            
+            frameOption.appendChild(frameImg);
+            frameOption.addEventListener('click', () => {
+                // Remove active class from all frames
+                document.querySelectorAll('.frame-option').forEach(option => {
+                    option.classList.remove('active');
+                });
+                
+                // Add active class to clicked frame
+                frameOption.classList.add('active');
+                
+                // Update selected frame
+                selectedFrame.src = url;
+                
+                // Collapse frame selection after choosing
+                collapseFrames();
+            });
+            
+            framesGrid.appendChild(frameOption);
+        });
+
+        // Toggle frame selection
+        framesHeader.addEventListener('click', () => {
+            if (framesGrid.classList.contains('expanded')) {
+                collapseFrames();
+            } else {
+                expandFrames();
+            }
+        });
+
+        function expandFrames() {
+            framesGrid.classList.add('expanded');
+            arrow.classList.add('expanded');
+            framesHeader.querySelector('h3').textContent = 'Select Frame (Click to Close)';
+        }
+
+        function collapseFrames() {
+            framesGrid.classList.remove('expanded');
+            arrow.classList.remove('expanded');
+            framesHeader.querySelector('h3').textContent = 'Select Frame';
+        }
+
+        // Upload photo
+        uploadTrigger.addEventListener('click', () => {
+            photoUpload.click();
+        });
+
+        photoUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    userPhoto.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Adjustment controls
+        zoomSlider.addEventListener('input', () => {
+            const value = zoomSlider.value;
+            zoomValue.textContent = `${value}%`;
+            updatePhotoTransform();
+        });
+
+        xSlider.addEventListener('input', () => {
+            const value = xSlider.value;
+            xValue.textContent = value;
+            updatePhotoTransform();
+        });
+
+        ySlider.addEventListener('input', () => {
+            const value = ySlider.value;
+            yValue.textContent = value;
+            updatePhotoTransform();
+        });
+
+        rotateSlider.addEventListener('input', () => {
+            const value = rotateSlider.value;
+            rotateValue.textContent = `${value}°`;
+            updatePhotoTransform();
+        });
+
+        function updatePhotoTransform() {
+            const zoom = zoomSlider.value / 100;
+            const x = xSlider.value;
+            const y = ySlider.value;
+            const rotate = rotateSlider.value;
+            
+            userPhoto.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) scale(${zoom}) rotate(${rotate}deg)`;
+        }
+
+        // Reset adjustments
+        resetBtn.addEventListener('click', () => {
+            zoomSlider.value = 100;
+            zoomValue.textContent = '100%';
+            xSlider.value = 0;
+            xValue.textContent = '0';
+            ySlider.value = 0;
+            yValue.textContent = '0';
+            rotateSlider.value = 0;
+            rotateValue.textContent = '0°';
+            
+            updatePhotoTransform();
+        });
+
+        // Download functionality
+        downloadBtn.addEventListener('click', () => {
+            // Create a canvas element
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas dimensions to match the frame container
+            const container = document.querySelector('.frame-container');
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+            
+            // Create a temporary image to draw the user photo
+            const tempImg = new Image();
+            tempImg.crossOrigin = 'anonymous';
+            tempImg.src = userPhoto.src;
+            
+            tempImg.onload = () => {
+                // Draw the user photo first (with adjustments)
+                const zoom = zoomSlider.value / 100;
+                const x = parseInt(xSlider.value);
+                const y = parseInt(ySlider.value);
+                const rotate = parseInt(rotateSlider.value);
+                
+                // Save the context
+                ctx.save();
+                
+                // Move to center of canvas
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                
+                // Apply rotation
+                ctx.rotate(rotate * Math.PI / 180);
+                
+                // Draw the user photo with zoom and position adjustments
+                const imgWidth = tempImg.width * zoom;
+                const imgHeight = tempImg.height * zoom;
+                
+                ctx.drawImage(
+                    tempImg, 
+                    -imgWidth / 2 + x, 
+                    -imgHeight / 2 + y, 
+                    imgWidth, 
+                    imgHeight
+                );
+                
+                // Restore the context
+                ctx.restore();
+                
+                // Create a temporary image for the frame
+                const frameImg = new Image();
+                frameImg.crossOrigin = 'anonymous';
+                frameImg.src = selectedFrame.src;
+                
+                frameImg.onload = () => {
+                    // Draw the frame on top
+                    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+                    
+                    // Convert canvas to data URL and trigger download
+                    const dataURL = canvas.toDataURL('image/png');
+                    const link = document.createElement('a');
+                    link.download = 'framed-photo.png';
+                    link.href = dataURL;
+                    link.click();
+                };
+            };
+        });
+    </script>
+</body>
+</html>
