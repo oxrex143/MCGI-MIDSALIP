@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCGI FRAME'S EDITOR</title>
+    <style>
+        :root {
+            --neon-blue: #00f0ff;
+            --neon-yellow: #fff000;
+            --dark-bg: #0a0a12;
+            --darker-bg: #050508;
+            --blue-glow: 0 0 10px var(--neon-blue);
+            --yellow-glow: 0 0 10px var(--neon-yellow);
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: var(--dark-bg);
+            color: var(--neon-blue);
+            position: relative;
+        }
+        
+        /* Hamburger Menu */
+        .hamburger-menu {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            cursor: pointer;
+        }
+        
+        .hamburger-icon {
+            width: 30px;
+            height: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .hamburger-icon span {
+            display: block;
+            height: 3px;
+            width: 100%;
+            background-color: var(--neon-yellow);
+            transition: all 0.3s ease;
+        }
+        
+        .menu-items {
+            position: absolute;
+            top: 40px;
+            right: 0;
+            background-color: var(--darker-bg);
+            border: 1px solid var(--neon-blue);
+            box-shadow: var(--blue-glow);
+            border-radius: 5px;
+            padding: 10px;
+            display: none;
+            width: 200px;
+        }
+        
+        .menu-items a, .menu-items button {
+            display: block;
+            color: var(--neon-blue);
+            padding: 8px 10px;
+            text-decoration: none;
+            transition: all 0.3s;
+            text-align: left;
+            width: 100%;
+            background: none;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .menu-items a:hover, .menu-items button:hover {
+            background-color: var(--neon-blue);
+            color: var(--dark-bg);
+        }
+        
+        .premium-plan {
+            color: var(--neon-yellow) !important;
+            font-weight: bold;
+        }
+        
+        h1 {
+            color: var(--neon-yellow);
+            text-shadow: var(--yellow-glow);
+            letter-spacing: 2px;
+        }
+        
+        h3 {
+            color: var(--neon-blue);
+            text-shadow: var(--blue-glow);
+        }
+        
+        /* Login/Signup Container */
+        .auth-container {
+            background-color: var(--darker-bg);
+            padding: 30px;
+            border-radius: 5px;
+            border: 1px solid var(--neon-blue);
+            box-shadow: var(--blue-glow);
+            width: 350px;
+            margin: 50px auto;
+        }
+        
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .auth-form input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--neon-blue);
+            background-color: var(--darker-bg);
+            color: var(--neon-blue);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .auth-form button {
+            background-color: var(--neon-blue);
+            color: var(--dark-bg);
+            border: none;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .auth-form button:hover {
+            background-color: var(--neon-yellow);
+            color: #000;
+        }
+        
+        .auth-switch {
+            margin-top: 15px;
+            color: var(--neon-blue);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        /* Main Editor (hidden by default) */
+        .editor-container {
+            display: none;
+            background-color: var(--darker-bg);
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid var(--neon-blue);
+            box-shadow: var(--blue-glow);
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .frame-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            margin: 20px auto;
+            border: 1px dashed var(--neon-blue);
+            overflow: hidden;
+        }
+        
+        #background-image {
+            position: absolute;
+            max-width: 100%;
+            max-height: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: move;
+            filter: brightness(100%) contrast(100%) saturate(100%);
+        }
+        
+        #frame-image {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            pointer-events: none;
+            transform-origin: center;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid var(--neon-blue);
+            border-radius: 5px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .control-group {
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        
+        button {
+            background-color: var(--darker-bg);
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+            text-shadow: var(--blue-glow);
+            grid-column: span 2;
+        }
+        
+        button:hover {
+            background-color: var(--neon-blue);
+            color: var(--dark-bg);
+            box-shadow: var(--blue-glow);
+        }
+        
+        .download-btn {
+            background-color: #0055ff;
+            color: white;
+        }
+        
+        .download-btn:hover {
+            background-color: #0077ff;
+        }
+        
+        select, input {
+            padding: 8px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid var(--neon-blue);
+            background-color: var(--darker-bg);
+            color: var(--neon-blue);
+            font-family: 'Courier New', monospace;
+            width: 100%;
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 5px;
+            background: var(--darker-bg);
+            border: 1px solid var(--neon-blue);
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            background: var(--neon-blue);
+            cursor: pointer;
+            box-shadow: var(--blue-glow);
+        }
+        
+        /* Position Adjustment Controls */
+        .position-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .position-controls label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        /* Premium Notification */
+        .premium-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--darker-bg);
+            border: 1px solid var(--neon-yellow);
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: var(--yellow-glow);
+            z-index: 1000;
+            max-width: 90%;
+            width: 400px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .premium-notification .close {
+            color: var(--neon-blue);
+            align-self: flex-end;
+            font-size: 20px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+        }
+        
+        .modal-content {
+            background-color: var(--darker-bg);
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid var(--neon-yellow);
+            width: 80%;
+            max-width: 500px;
+            border-radius: 5px;
+            box-shadow: var(--yellow-glow);
+        }
+        
+        .modal .close {
+            color: var(--neon-blue);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .modal .close:hover {
+            color: var(--neon-yellow);
+        }
+        
+        /* Typewriter effect for title */
+        .typewriter h1 {
+            overflow: hidden;
+            border-right: .15em solid var(--neon-yellow);
+            white-space: nowrap;
+            margin: 0 auto;
+            letter-spacing: .15em;
+            animation: 
+                typing 3.5s steps(40, end),
+                blink-caret .75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: var(--neon-yellow); }
+        }
+        
+        /* Music Player Styles */
+        .music-player {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background-color: var(--darker-bg);
+            border: 1px solid var(--neon-blue);
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: var(--blue-glow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .music-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .music-controls button {
+            background: none;
+            border: none;
+            color: var(--neon-blue);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px;
+            margin: 0;
+            grid-column: span 1;
+        }
+        
+        .music-controls button:hover {
+            color: var(--neon-yellow);
+        }
+        
+        .volume-control {
+            width: 80px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Music (hidden audio element) -->
+    <audio id="background-music" loop>
+        <source src="https://archive.org/download/nariyan-pa-rin-composed-by-bro.-daniel-razon-i-rayden-cabrigas-asop-proud-mcgi-bro-eli-soriano/MCGI%20Theme_%20Kristiyano%20Ako%2C%20Kristiyano%20Tayo.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Music Player Controls -->
+    <div class="music-player" id="music-player">
+        <div class="music-controls">
+            <button id="play-pause-btn">▶</button>
+            <button id="mute-btn">🔊</button>
+            <input type="range" id="volume-control" class="volume-control" min="0" max="1" step="0.1" value="0.5">
+        </div>
+    </div>
+
+    <!-- Hamburger Menu -->
+    <div class="hamburger-menu" id="hamburger-menu" style="display: none;">
+        <div class="hamburger-icon" id="hamburger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="menu-items" id="menu-items">
+            <a href="https://www.facebook.com/jurex.aso" target="_blank" class="premium-plan">
+                Click here for Premium (Only P20) access
+            </a>
+            <button id="menu-logout">Logout</button>
+        </div>
+    </div>
+
+    <!-- Login/Signup Container -->
+    <div class="auth-container" id="auth-container">
+        <div id="login-form" class="auth-form">
+            <h2 style="color: var(--neon-yellow);">LOGIN</h2>
+            <input type="text" id="login-username" placeholder="Username" required>
+            <input type="password" id="login-password" placeholder="Password" required>
+            <button id="login-btn">LOGIN</button>
+            <div class="auth-switch" id="show-signup">Don't have an account? Sign up</div>
+        </div>
+        
+        <div id="signup-form" class="auth-form" style="display: none;">
+            <h2 style="color: var(--neon-yellow);">SIGN UP</h2>
+            <input type="text" id="signup-username" placeholder="Username" required>
+            <input type="password" id="signup-password" placeholder="Password" required>
+            <button id="signup-btn">SIGN UP</button>
+            <div class="auth-switch" id="show-login">Already have an account? Login</div>
+        </div>
+    </div>
+
+    <!-- Premium Notification -->
+    <div class="premium-notification" id="premium-notification">
+        <span class="close" id="close-premium-notification">&times;</span>
+        <h3 style="margin-top: 0; color: var(--neon-yellow);">
+            {notificationTitle}
+        </h3>
+        <p>{notificationMessage}</p>
+    </div>
+
+    <!-- Main Editor (hidden until login) -->
+    <div class="editor-container" id="editor-container">
+        <div class="typewriter">
+            <h1>MCGI FRAME EDITOR</h1>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <h3>FRAME SELECTION</h3>
+                <select id="frame-selector">
+                    <option value="https://i.imgur.com/3V8h4UV.png">MCGI FRAME 1</option>
+                    <option value="https://i.imgur.com/K9BEwOy.png">MCGI FRAME 2</option>
+                    <option value="https://i.imgur.com/aWx9Oo3.png">MCGI MIDSALIP</option>
+                    <option value="https://i.imgur.com/198tztT.png">MCGI FRAME 3</option>
+                    <option value="_">SEE PHOTO</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <h3>UPLOAD PHOTO</h3>
+                <input type="file" id="photo-upload" accept="image/*">
+            </div>
+            
+            <div class="control-group">
+                <h3>PHOTO CONTROLS</h3>
+                <label>ZOOM: <input type="range" id="zoom-control" min="50" max="200" value="100"></label>
+                <label>ROTATE: <input type="range" id="rotate-control" min="0" max="360" value="0"></label>
+                <label>BRIGHTNESS: <input type="range" id="brightness-control" min="0" max="200" value="100"></label>
+                <label>CONTRAST: <input type="range" id="contrast-control" min="0" max="200" value="100"></label>
+                <label>SATURATION: <input type="range" id="saturation-control" min="0" max="200" value="100"></label>
+                
+                <div class="position-controls">
+                    <label>POSITION X: <input type="range" id="position-x" min="-100" max="100" value="0"></label>
+                    <label>POSITION Y: <input type="range" id="position-y" min="-100" max="100" value="0"></label>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>FRAME CONTROLS</h3>
+                <label>FRAME SCALE: <input type="range" id="frame-scale" min="80" max="120" value="100"></label>
+            </div>
+            
+            <button id="center-btn">CENTER PHOTO</button>
+            <button class="download-btn" id="download-btn">DOWNLOAD FRAMED PHOTO</button>
+        </div>
+        
+        <div class="frame-container" id="export-area">
+            <img id="background-image" style="display: none;">
+            <img id="frame-image" src="">
+        </div>
+    </div>
+
+    <!-- Premium Modal -->
+    <div id="premium-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 style="color: var(--neon-yellow); text-shadow: var(--yellow-glow);">PREMIUM ACCESS</h2>
+            <p>Upgrade to premium for watermark-free downloads and exclusive features!</p>
+            <p>Contact the admin for premium access on the hamburger menu.</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize background music
+        const backgroundMusic = document.getElementById('background-music');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const muteBtn = document.getElementById('mute-btn');
+        const volumeControl = document.getElementById('volume-control');
+        
+        // Auto-play music (with user interaction fallback)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Try to autoplay (may be blocked by browser)
+            const playPromise = backgroundMusic.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    // Autoplay was prevented, show paused state
+                    playPauseBtn.textContent = '▶';
+                });
+            }
+        });
+        
+        // Play/Pause button
+        playPauseBtn.addEventListener('click', function() {
+            if (backgroundMusic.paused) {
+                backgroundMusic.play();
+                playPauseBtn.textContent = '❚❚';
+            } else {
+                backgroundMusic.pause();
+                playPauseBtn.textContent = '▶';
+            }
+        });
+        
+        // Mute button
+        muteBtn.addEventListener('click', function() {
+            backgroundMusic.muted = !backgroundMusic.muted;
+            muteBtn.textContent = backgroundMusic.muted ? '🔇' : '🔊';
+        });
+        
+        // Volume control
+        volumeControl.addEventListener('input', function() {
+            backgroundMusic.volume = volumeControl.value;
+        });
+        
+        // Set initial volume
+        backgroundMusic.volume = volumeControl.value;
+
+        // Hamburger Menu Functionality
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        const hamburgerIcon = document.getElementById('hamburger-icon');
+        const menuItems = document.getElementById('menu-items');
+        
+        hamburgerMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+            menuItems.style.display = menuItems.style.display === 'block' ? 'none' : 'block';
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function() {
+            menuItems.style.display = 'none';
+        });
+        
+        // Menu logout functionality
+        document.getElementById('menu-logout').addEventListener('click', function(e) {
+            e.preventDefault();
+            logout();
+        });
+
+        // Premium accounts database
+        const premiumAccounts = {
+            "Admin": "Admin123",
+            "Premium1": "Premium123",
+            "Premium2": "Premium456",
+            "Premium3": "Premium789",
+            "VIP1": "VIP123",
+            "VIP2": "VIP456",
+            "VIP3": "VIP789",
+            "Gold1": "Gold123",
+            "Gold2": "Gold456",
+            "Gold3": "Gold789"
+        };
+
+        // Regular users database (stored in localStorage)
+        if (!localStorage.getItem('users')) {
+            localStorage.setItem('users', JSON.stringify({}));
+        }
+
+        // Elements
+        const authContainer = document.getElementById('auth-container');
+        const editorContainer = document.getElementById('editor-container');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const showSignup = document.getElementById('show-signup');
+        const showLogin = document.getElementById('show-login');
+        const loginBtn = document.getElementById('login-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const loginUsername = document.getElementById('login-username');
+        const loginPassword = document.getElementById('login-password');
+        const signupUsername = document.getElementById('signup-username');
+        const signupPassword = document.getElementById('signup-password');
+        
+        const premiumNotification = document.getElementById('premium-notification');
+        const closePremiumNotification = document.getElementById('close-premium-notification');
+        
+        const frameSelector = document.getElementById('frame-selector');
+        const photoUpload = document.getElementById('photo-upload');
+        const backgroundImage = document.getElementById('background-image');
+        const frameImage = document.getElementById('frame-image');
+        const exportArea = document.getElementById('export-area');
+        
+        // Photo Controls
+        const zoomControl = document.getElementById('zoom-control');
+        const rotateControl = document.getElementById('rotate-control');
+        const brightnessControl = document.getElementById('brightness-control');
+        const contrastControl = document.getElementById('contrast-control');
+        const saturationControl = document.getElementById('saturation-control');
+        const positionX = document.getElementById('position-x');
+        const positionY = document.getElementById('position-y');
+        
+        // Frame Controls
+        const frameScale = document.getElementById('frame-scale');
+        
+        // Buttons
+        const centerBtn = document.getElementById('center-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        
+        // Modal elements
+        const modal = document.getElementById('premium-modal');
+        const span = document.getElementsByClassName('close')[0];
+
+        // Current state
+        let currentScale = 1;
+        let currentRotate = 0;
+        let offsetX = 0;
+        let offsetY = 0;
+        let isDragging = false;
+        let startX, startY;
+        let currentUser = null;
+        let isPremiumUser = false;
+
+        // Show/hide auth forms
+        showSignup.addEventListener('click', () => {
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'flex';
+        });
+
+        showLogin.addEventListener('click', () => {
+            signupForm.style.display = 'none';
+            loginForm.style.display = 'flex';
+        });
+
+        // Close premium notification
+        closePremiumNotification.addEventListener('click', () => {
+            premiumNotification.style.display = 'none';
+        });
+
+        // Login function
+        loginBtn.addEventListener('click', () => {
+            const username = loginUsername.value.trim();
+            const password = loginPassword.value.trim();
+            
+            if (!username || !password) {
+                alert('Please enter both username and password');
+                return;
+            }
+            
+            // Check premium accounts
+            if (premiumAccounts[username] && premiumAccounts[username] === password) {
+                currentUser = username;
+                isPremiumUser = true;
+                showEditor();
+                showPremiumNotification(true);
+                return;
+            }
+            
+            // Check regular accounts
+            const users = JSON.parse(localStorage.getItem('users'));
+            if (users[username] && users[username] === password) {
+                currentUser = username;
+                isPremiumUser = false;
+                showEditor();
+                showPremiumNotification(false);
+                return;
+            }
+            
+            alert('Invalid username or password');
+        });
+
+        // Signup function
+        signupBtn.addEventListener('click', () => {
+            const username = signupUsername.value.trim();
+            const password = signupPassword.value.trim();
+            
+            if (!username || !password) {
+                alert('Please enter both username and password');
+                return;
+            }
+            
+            // Check if username exists in premium accounts
+            if (premiumAccounts[username]) {
+                alert('This username is reserved for premium accounts');
+                return;
+            }
+            
+            // Check if username exists in regular accounts
+            const users = JSON.parse(localStorage.getItem('users'));
+            if (users[username]) {
+                alert('Username already exists');
+                return;
+            }
+            
+            // Add new user
+            users[username] = password;
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            currentUser = username;
+            isPremiumUser = false;
+            showEditor();
+            showPremiumNotification(false);
+        });
+
+        // Show premium notification
+        function showPremiumNotification(isPremium) {
+            const title = isPremium ? "PREMIUM ACCESS GRANTED!" : "WELCOME FREE USER";
+            const message = isPremium 
+                ? "You can now download without watermarks!" 
+                : "Your downloads will include watermarks. Contact admin for premium access.";
+            
+            premiumNotification.innerHTML = `
+                <span class="close" id="close-premium-notification">&times;</span>
+                <h3 style="margin-top: 0; color: var(--neon-yellow);">${title}</h3>
+                <p>${message}</p>
+            `;
+            
+            premiumNotification.style.display = 'flex';
+            
+            // Reattach close event listener
+            document.getElementById('close-premium-notification').addEventListener('click', () => {
+                premiumNotification.style.display = 'none';
+            });
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                premiumNotification.style.display = 'none';
+            }, 5000);
+        }
+
+        // Logout function
+        function logout() {
+            currentUser = null;
+            isPremiumUser = false;
+            editorContainer.style.display = 'none';
+            authContainer.style.display = 'block';
+            hamburgerMenu.style.display = 'none';
+            resetEditor();
+        }
+
+        // Show editor after successful login
+        function showEditor() {
+            authContainer.style.display = 'none';
+            editorContainer.style.display = 'block';
+            hamburgerMenu.style.display = 'block';
+            initEditor();
+        }
+
+        // Initialize editor components
+        function initEditor() {
+            // Initialize with first frame
+            updateFrame();
+
+            // Event listeners
+            frameSelector.addEventListener('change', updateFrame);
+            photoUpload.addEventListener('change', handlePhotoUpload);
+            
+            // Photo adjustments
+            zoomControl.addEventListener('input', updatePhoto);
+            rotateControl.addEventListener('input', updatePhoto);
+            brightnessControl.addEventListener('input', updatePhoto);
+            contrastControl.addEventListener('input', updatePhoto);
+            saturationControl.addEventListener('input', updatePhoto);
+            positionX.addEventListener('input', updatePosition);
+            positionY.addEventListener('input', updatePosition);
+            
+            // Frame adjustments
+            frameScale.addEventListener('input', updateFrameScale);
+            
+            centerBtn.addEventListener('click', centerPhoto);
+            downloadBtn.addEventListener('click', downloadFramedPhoto);
+            
+            // Modal close
+            span.addEventListener('click', () => modal.style.display = 'none');
+            window.addEventListener('click', (event) => {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            // Make the photo draggable
+            backgroundImage.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', endDrag);
+        }
+
+        // Reset editor state
+        function resetEditor() {
+            backgroundImage.src = '';
+            backgroundImage.style.display = 'none';
+            frameImage.src = '';
+            
+            // Reset controls
+            zoomControl.value = 100;
+            rotateControl.value = 0;
+            brightnessControl.value = 100;
+            contrastControl.value = 100;
+            saturationControl.value = 100;
+            frameScale.value = 100;
+            positionX.value = 0;
+            positionY.value = 0;
+            
+            currentScale = 1;
+            currentRotate = 0;
+            offsetX = 0;
+            offsetY = 0;
+        }
+
+        function updateFrame() {
+            const selectedFrame = frameSelector.value;
+            frameImage.src = selectedFrame;
+        }
+
+        function handlePhotoUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    backgroundImage.src = event.target.result;
+                    backgroundImage.style.display = 'block';
+                    centerPhoto();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function updatePhoto() {
+            currentScale = zoomControl.value / 100;
+            currentRotate = rotateControl.value;
+            
+            backgroundImage.style.filter = `
+                brightness(${brightnessControl.value}%) 
+                contrast(${contrastControl.value}%) 
+                saturate(${saturationControl.value}%)
+            `;
+            
+            applyTransform();
+        }
+
+        function updatePosition() {
+            offsetX = parseInt(positionX.value);
+            offsetY = parseInt(positionY.value);
+            applyTransform();
+        }
+
+        function updateFrameScale() {
+            const scale = frameScale.value / 100;
+            frameImage.style.transform = `scale(${scale})`;
+        }
+
+        function centerPhoto() {
+            offsetX = 0;
+            offsetY = 0;
+            positionX.value = 0;
+            positionY.value = 0;
+            applyTransform();
+        }
+
+        function applyTransform() {
+            backgroundImage.style.transform = `
+                translate(-50%, -50%) 
+                scale(${currentScale}) 
+                rotate(${currentRotate}deg)
+                translate(${offsetX}px, ${offsetY}px)
+            `;
+        }
+
+        function startDrag(e) {
+            isDragging = true;
+            startX = e.clientX - offsetX;
+            startY = e.clientY - offsetY;
+            backgroundImage.style.cursor = 'grabbing';
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            offsetX = e.clientX - startX;
+            offsetY = e.clientY - startY;
+            positionX.value = offsetX;
+            positionY.value = offsetY;
+            applyTransform();
+        }
+
+        function endDrag() {
+            isDragging = false;
+            backgroundImage.style.cursor = 'grab';
+        }
+
+        function downloadFramedPhoto() {
+            if (!backgroundImage.src || backgroundImage.src === '#') {
+                alert('PLEASE UPLOAD A PHOTO FIRST');
+                return;
+            }
+
+            // Create a canvas to combine the images
+            const canvas = document.createElement('canvas');
+            canvas.width = 500;
+            canvas.height = 500;
+            const ctx = canvas.getContext('2d');
+
+            // Draw the background image first
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            img.onload = function() {
+                // Calculate dimensions to maintain aspect ratio
+                let width = img.width;
+                let height = img.height;
+                const aspectRatio = width / height;
+                
+                if (width > height) {
+                    width = 500 * currentScale;
+                    height = width / aspectRatio;
+                } else {
+                    height = 500 * currentScale;
+                    width = height * aspectRatio;
+                }
+                
+                // Draw the image with current transformations
+                ctx.save();
+                ctx.translate(250, 250);
+                ctx.rotate(currentRotate * Math.PI / 180);
+                ctx.translate(offsetX, offsetY);
+                ctx.filter = `
+                    brightness(${brightnessControl.value}%) 
+                    contrast(${contrastControl.value}%) 
+                    saturate(${saturationControl.value}%)
+                `;
+                ctx.drawImage(img, -width/2, -height/2, width, height);
+                ctx.restore();
+
+                // Draw the frame on top
+                const frameImg = new Image();
+                frameImg.crossOrigin = 'Anonymous';
+                frameImg.onload = function() {
+                    const scale = frameScale.value / 100;
+                    ctx.save();
+                    ctx.translate(250, 250);
+                    ctx.scale(scale, scale);
+                    ctx.drawImage(frameImg, -250, -250, 500, 500);
+                    ctx.restore();
+
+                    // Add watermark if not premium user
+                    if (!isPremiumUser) {
+                        ctx.font = 'bold 40px Courier New';
+                        ctx.fillStyle = 'rgba(255, 240, 0, 0.7)';
+                        ctx.textAlign = 'right';
+                        ctx.textBaseline = 'bottom';
+                        ctx.shadowColor = '#fff000';
+                        ctx.shadowBlur = 10;
+                        ctx.fillText('', canvas.width - 20, canvas.height - 20);
+                    }
+
+                    // Trigger download
+                    const link = document.createElement('a');
+                    link.download = `frame-${currentUser}-${Date.now()}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                };
+                frameImg.src = frameImage.src;
+            };
+            img.src = backgroundImage.src;
+        }
+    </script>
+</body>
+</html>
